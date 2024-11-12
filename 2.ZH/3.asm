@@ -1,4 +1,4 @@
-;Írjon ki egy tetszőleges (konstatns) szöveg páratlan számú karaktereit. Bekéréses megoldás
+;Írjon ki egy tetszőleges (konstatns) szöveget úgy hogy a szöközöket kihagyja. Bekéréses megoldás
 
 .MODEL SMALL
 .STACK 100h
@@ -15,7 +15,7 @@
         CALL clear_screen ; Képernyő törlése
         CALL read_chars ; Szöveg beolvasása a pufferbe
         CALL cr_lf ; Új sorba ugrás
-        CALL write_char_odd ; Páratlan indexű karakterek kiírása
+        CALL write_char_without_space ; Páros indexű karakterek kiírása
         CALL sys_exit ; Kilépés
     MAIN ENDP
 
@@ -35,18 +35,28 @@
     read_chars ENDP
 
     ; ===== Páratlan indexű karakterek kiírása =====
-    write_char_odd PROC
-        MOV SI, OFFSET Buffer ; A puffer kezdőcímét SI-be helyezzük
-    next_even_char:
-        MOV DL, [SI] ; A SI által mutatott karaktert DL-be töltjük
-        OR DL, DL ; Ellenőrizzük, hogy nullás-e (string vége)
-        JZ stop ; Ha igen, kilépünk
-        CALL write_char ; A karakter kiírása
-        ADD SI, 2 ; A következő páros indexű karakterre ugrunk
-        JMP next_even_char ; Folytatjuk a kiírást
-    stop:
-        RET
-    write_char_odd ENDP
+    write_char_without_space PROC
+		MOV AX, DGROUP 		; adatszegmens cimenek kinyerese
+		MOV DS, AX 			; adatszegmens cimenek tarolasa DS-ben (hosszu tavu tarolas)
+		LEA BX, Buffer 		; creating the first pointer of the string constant
+
+		next_nonspace_char:
+			MOV DL, [BX] 	; a pointer adott cimen található érték (= karakter) kimentése DL-be  // a cimet folyamatosan növeljük BL incrementálásval
+			OR DL, DL 		; DL reset 
+			JZ stop 		; ha elértük az endbitet, akkor megallunk (konstans , 0) <-- a 0 az endbit // JZ = jump near if 0
+			CMP DL, ' '		; beolvasott ertek osszehasonlitasa SPACE karakterrel
+			JE skip_space	; ha SPACE-t olvastunk be, akkor azt kihagyjuk a kiiratasbol a skip_space subrutin segitsegevel
+
+			CALL write_char	; ha nem SPACE-t olvastunk be, kiiratjuk
+
+			INC BX			; loop counter increase (moving to the next char)
+			JMP next_nonspace_char
+		skip_space:
+			INC BX			; incrementing loop counter so that we'll skip to the next character
+			JMP next_nonspace_char
+		stop:
+			RET
+	write_char_without_space ENDP
 
     ; ===== Egy karakter beolvasása =====
     read_char PROC

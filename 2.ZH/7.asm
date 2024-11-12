@@ -1,10 +1,11 @@
-;Írjon ki egy tetszőleges (konstatns) szöveg páratlan számú karaktereit. Bekéréses megoldás
+;Visszafele string. Bekéréses megoldás
 
 .MODEL SMALL
 .STACK 100h
 .DATA
     Buffer DB 100 DUP(0) ; Puffer a felhasználói beviteli szöveg tárolására
-    CR EQU 13 ; CR(Enter karakter)
+    Buffer_LEN EQU $ - Buffer
+    CR EQU 13 ; CR (Enter karakter)
     LF EQU 10 ; LF (Új sor)
 
 .CODE
@@ -15,7 +16,7 @@
         CALL clear_screen ; Képernyő törlése
         CALL read_chars ; Szöveg beolvasása a pufferbe
         CALL cr_lf ; Új sorba ugrás
-        CALL write_char_odd ; Páratlan indexű karakterek kiírása
+        CALL write_string_backwards ; 
         CALL sys_exit ; Kilépés
     MAIN ENDP
 
@@ -34,19 +35,25 @@
         RET
     read_chars ENDP
 
-    ; ===== Páratlan indexű karakterek kiírása =====
-    write_char_odd PROC
-        MOV SI, OFFSET Buffer ; A puffer kezdőcímét SI-be helyezzük
-    next_even_char:
-        MOV DL, [SI] ; A SI által mutatott karaktert DL-be töltjük
-        OR DL, DL ; Ellenőrizzük, hogy nullás-e (string vége)
-        JZ stop ; Ha igen, kilépünk
-        CALL write_char ; A karakter kiírása
-        ADD SI, 2 ; A következő páros indexű karakterre ugrunk
-        JMP next_even_char ; Folytatjuk a kiírást
-    stop:
-        RET
-    write_char_odd ENDP
+    ;visszafele string
+  write_string_backwards PROC
+		MOV AX, DGROUP 					; adatszegmens cimenek kinyerese
+		MOV DS, AX 						; adatszegmens cimenek tarolasa DS-ben (hosszu tavu tarolas)
+		LEA BX, Buffer + Buffer_LEN - 2 ; loop countert az utolso valos karakterre allitjuk // -2 azert kell, hogy a tulcsordulast es a binaris 0-t (= endbitet) elkerüljük
+		LEA CX, Buffer 					; segedregiszter bezetese, mely az adott szoveg elso karakterere mutat // szukseges a ciklus megallitasahoz -- igy tudjuk megallitani a kiiratast amikor elerunk a string elso karakterehez
+
+		previous_char:
+			MOV DL, [BX] 				; a pointer adott cimen található érték (= karakter) kimentése DL-be  // a cimet folyamatosan növeljük BL incrementálásval
+			OR DL, DL					; DL reset 
+			CALL write_char				; karakter kiiratasa
+			CMP BX, CX 					; teszteljuk, hogy elertunk-e a string elso karakterehez
+			JE stop						; ha elertunk visszafele a string elso karakterehez, kilepunk
+
+			DEC BX 						; decere,emtomg loop counter so that we'll skip to the previous character
+			JMP previous_char
+		stop:
+			RET
+	write_string_backwards ENDP
 
     ; ===== Egy karakter beolvasása =====
     read_char PROC

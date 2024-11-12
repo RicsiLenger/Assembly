@@ -1,4 +1,4 @@
-;Írjon ki egy tetszőleges (konstatns) szöveg páratlan számú karaktereit. Bekéréses megoldás
+;kisbetű-NAGYBETŰ. Bekéréses megoldás
 
 .MODEL SMALL
 .STACK 100h
@@ -15,7 +15,7 @@
         CALL clear_screen ; Képernyő törlése
         CALL read_chars ; Szöveg beolvasása a pufferbe
         CALL cr_lf ; Új sorba ugrás
-        CALL write_char_odd ; Páratlan indexű karakterek kiírása
+        CALL convert_to_uppercase ; Páros indexű karakterek kiírása
         CALL sys_exit ; Kilépés
     MAIN ENDP
 
@@ -34,19 +34,30 @@
         RET
     read_chars ENDP
 
-    ; ===== Páratlan indexű karakterek kiírása =====
-    write_char_odd PROC
-        MOV SI, OFFSET Buffer ; A puffer kezdőcímét SI-be helyezzük
-    next_even_char:
-        MOV DL, [SI] ; A SI által mutatott karaktert DL-be töltjük
-        OR DL, DL ; Ellenőrizzük, hogy nullás-e (string vége)
-        JZ stop ; Ha igen, kilépünk
-        CALL write_char ; A karakter kiírása
-        ADD SI, 2 ; A következő páros indexű karakterre ugrunk
-        JMP next_even_char ; Folytatjuk a kiírást
-    stop:
-        RET
-    write_char_odd ENDP
+    ;Kisbetű-NAGYBETŰ
+   convert_to_uppercase PROC
+		MOV AX, DGROUP 					; adatszegmens cimenek kinyerese
+		MOV DS, AX 						; adatszegmens cimenek tarolasa DS-ben (hosszu tavu tarolas)
+		LEA BX, Buffer				; creating the first pointer of the string constant
+
+		next_char_conversion:
+			MOV DL, [BX] 				; a pointer adott cimen található érték (= karakter) kimentése DL-be  // a cimet folyamatosan növeljük BL incrementálásval
+			OR DL, DL					; DL reset 
+			JZ stop						; ha elértük az endbitet, akkor megallunk (konstans , 0) <-- a 0 az endbit // JZ = jump near if 0
+			CMP DL, 'z'					; beolvasott ertek osszehasonlitasa az utolso kisbetuvel (z)
+			JLE convert_to_upcase_char	; ha a beolvasott ertek kisebb vagy egyenlo az utolso kisbetu ascii ertekevel, akkor nagybetuve alakitjuk // JLE = less than or equal to
+			JMP print_char
+		convert_to_upcase_char:
+			CMP DL, 'a'					; beolvasott ertek osszehasonlitasa az elso kisbetuvel (a)
+			JL print_char				; ha kisebb a beolvasott ertek az elso kisbetunel, akkor szimplan kiiratjuk -- mert nagybetu vagy specialis karakter lehet
+			SUB DL, 'a'-'A'				; ha a beolvasott ertek a-z kozott van, akkor kivonjuk belole a kis es nagybetuk kozotti ascii tavolsagot, igy megkapjuk az adott kisbetu nagybetu valtozatat
+		print_char:
+			CALL write_char				; kiiratjuk a nagybetu kaarktert
+			INC BX						; incrementing loop counter so that we'll skip to the next character
+			JMP next_char_conversion
+		stop:
+			RET
+	convert_to_uppercase ENDP
 
     ; ===== Egy karakter beolvasása =====
     read_char PROC
