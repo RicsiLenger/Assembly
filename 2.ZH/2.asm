@@ -4,7 +4,7 @@
 .STACK 100h
 .DATA
     Buffer DB 100 DUP(0) ; Puffer a felhasználói beviteli szöveg tárolására
-    CR EQU 13 ; CR - kocsi vissza (Enter karakter)
+    CR EQU 13 ; CR(Enter karakter)
     LF EQU 10 ; LF (Új sor)
 
 .CODE
@@ -15,7 +15,7 @@
         CALL clear_screen ; Képernyő törlése
         CALL read_chars ; Szöveg beolvasása a pufferbe
         CALL cr_lf ; Új sorba ugrás
-        CALL write_char_even ; Páros indexű karakterek kiírása
+        CALL write_char_odd ; Páros indexű karakterek kiírása
         CALL sys_exit ; Kilépés
     MAIN ENDP
 
@@ -34,8 +34,8 @@
         RET
     read_chars ENDP
 
-    ; ===== Páros indexű karakterek kiírása =====
-    write_char_even PROC
+    ; ===== Páratlan indexű karakterek kiírása =====
+    write_char_odd PROC
         MOV SI, OFFSET Buffer ; A puffer kezdőcímét SI-be helyezzük
     next_even_char:
         MOV DL, [SI] ; A SI által mutatott karaktert DL-be töltjük
@@ -46,7 +46,7 @@
         JMP next_even_char ; Folytatjuk a kiírást
     stop:
         RET
-    write_char_even ENDP
+    write_char_odd ENDP
 
     ; ===== Egy karakter beolvasása =====
     read_char PROC
