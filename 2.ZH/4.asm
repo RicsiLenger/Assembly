@@ -15,7 +15,7 @@
         CALL clear_screen ; Képernyő törlése
         CALL read_chars ; Szöveg beolvasása a pufferbe
         CALL cr_lf ; Új sorba ugrás
-        CALL write_words_in_newline ; Páros indexű karakterek kiírása
+        CALL write_words_in_newline ; 
         CALL sys_exit ; Kilépés
     MAIN ENDP
 

@@ -15,7 +15,7 @@
         CALL clear_screen ; Képernyő törlése
         CALL read_chars ; Szöveg beolvasása a pufferbe
         CALL cr_lf ; Új sorba ugrás
-        CALL convert_to_uppercase ; Páros indexű karakterek kiírása
+        CALL convert_to_uppercase ; 
         CALL sys_exit ; Kilépés
     MAIN ENDP
 
