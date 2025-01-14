@@ -6,7 +6,7 @@ CR = 13
     Kerdes1 DB "Kerem a meghajto szamat: ", 0
     Kerdes2 DB "Kerem a kiolvasando szektor szamat: ", 0
 .DATA?
-    meghajto DB 1 DUP(?)
+    drive DB 1 DUP(?)
     block DB 512 DUP (?) ;1 blokknyi terület kijelölése
     kar DB 1 DUP (?)
     y DB 1 DUP (?)
@@ -21,8 +21,8 @@ main proc
     ; Felhasználói bemenet bekérése
     LEA BX, Kerdes1
     CALL get_user_input
-    MOV meghajto, DL
-    CALL ujsor
+    MOV drive, DL
+    CALL new_line
 
     LEA BX, Kerdes2
     CALL get_user_input ; DX-ben lesz az olvasásig.
@@ -64,10 +64,9 @@ set_video_mode endp
 
 read_disk_block proc
     LEA BX, block ; DS:BX memóriacímre tölti a blokkot
-    MOV AL, meghajto ; Lemezmeghajtó száma (A:0, B:1, C:2, stb.)
+    MOV AL, drive ; Lemezmeghajtó száma (A:0, B:1, C:2, stb.)
     MOV CX, 1 ; Egyszerre beolvasott blokkok száma
-    INT 25h ; Olvasás
-    POPF ; A veremben tárolt jelzőbitek törlése
+    INT 13h ; Olvasás
     XOR DX, DX ; Kiírandó adatok kezdőcíme DS:DX
     RET
 read_disk_block endp
@@ -137,12 +136,12 @@ write_block proc ;Egy blokk kiírása a képernyőre
     PUSH CX ;CX mentése
     PUSH DX ;DX mentése
 
-    call ujsor
+    call new_line
 
     MOV CX, 32 ;Kiírandó sorok száma CX-be
 write_block_new:
     CALL out_line ;Egy sor kiírása
-    CALL ujsor
+    CALL new_line
     ADD DX, 16 ;Következő sor adatainak kezdőcíme;
     LOOP write_block_new ;Új sor
     POP DX ;DX visszaállítása
